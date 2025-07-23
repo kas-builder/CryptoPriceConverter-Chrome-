@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Test Runner</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-header {
+            background: linear-gradient(135deg, #49EACB 0%, #3BC5A8 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .price-test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .price-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+        }
+        
+        .price-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 5px 0;
+        }
+        
+        .test-controls {
+            background: #e7f3ff;
+            border: 2px solid #007bff;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-controls button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .test-controls button:hover {
+            background: #0056b3;
+        }
+        
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            white-space: pre-wrap;
+        }
+        
+        .theme-test {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .theme-kaspa {
+            background: linear-gradient(135deg, #49EACB 0%, #3BC5A8 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            flex: 1;
+        }
+        
+        .theme-bitcoin {
+            background: linear-gradient(135deg, #F7931A 0%, #E8830F 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            flex: 1;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-pass { background: #28a745; }
+        .status-fail { background: #dc3545; }
+        .status-pending { background: #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>Cryptocurrency Converter Extension Test Suite</h1>
+        <p>Comprehensive testing for Kaspa and Bitcoin price conversion functionality</p>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <div class="test-controls">
+            <button onclick="runBasicTests()">Run Basic Tests</button>
+            <button onclick="testKaspaMode()">Test Kaspa Mode</button>
+            <button onclick="testBitcoinMode()">Test Bitcoin Mode</button>
+            <button onclick="testThemeSwitching()">Test Theme Switching</button>
+            <button onclick="testRefreshButton()">Test Refresh Button</button>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div class="console-output" id="console"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Theme Testing</h2>
+        <div class="theme-test">
+            <div class="theme-kaspa">
+                <h3>Kaspa Theme (Green)</h3>
+                <p>Primary: #49EACB</p>
+                <p>Hover: #3BC5A8</p>
+                <p>Accent: #2EAF94</p>
+            </div>
+            <div class="theme-bitcoin">
+                <h3>Bitcoin Theme (Orange)</h3>
+                <p>Primary: #F7931A</p>
+                <p>Hover: #E8830F</p>
+                <p>Accent: #FFA500</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Price Conversion Test Cases</h2>
+        
+        <div class="price-test-grid">
+            <div class="price-card">
+                <h4>Small Purchases</h4>
+                <div class="price">$5.99</div>
+                <div class="price">$12.50</div>
+                <div class="price">$25.99</div>
+            </div>
+            
+            <div class="price-card">
+                <h4>Medium Purchases</h4>
+                <div class="price">$99.99</div>
+                <div class="price">$299.50</div>
+                <div class="price">$599.00</div>
+            </div>
+            
+            <div class="price-card">
+                <h4>Large Purchases</h4>
+                <div class="price">$1,299.99</div>
+                <div class="price">$5,999.00</div>
+                <div class="price">$25,000.00</div>
+            </div>
+            
+            <div class="price-card">
+                <h4>Very Large Purchases</h4>
+                <div class="price">$99,999.99</div>
+                <div class="price">$500,000.00</div>
+                <div class="price">$1,000,000.00</div>
+            </div>
+            
+            <div class="price-card">
+                <h4>Edge Cases</h4>
+                <div class="price">$1.00</div>
+                <div class="price">$0.99</div>
+                <div class="price">$1,234,567.89</div>
+            </div>
+            
+            <div class="price-card">
+                <h4>Per-Unit (Should NOT Convert)</h4>
+                <div>Price per oz: $0.25</div>
+                <div>Unit price: $0.15</div>
+                <div>Per gram: $0.05</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Dynamic Content Test</h2>
+        <div id="dynamic-content">
+            <button onclick="addDynamicPrice()">Add Dynamic Price</button>
+            <button onclick="addBulkPrices()">Add Bulk Prices</button>
+            <button onclick="clearDynamic()">Clear Dynamic Content</button>
+            <div id="dynamic-prices"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warn' ? '⚠️' : 'ℹ️';
+            console.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+            
+            // Also log to browser console
+            console[type === 'error' ? 'error' : type === 'warn' ? 'warn' : 'log'](message);
+        }
+        
+        function clearConsole() {
+            document.getElementById('console').textContent = '';
+        }
+        
+        async function runBasicTests() {
+            log('Starting basic extension tests...', 'info');
+            
+            // Test 1: Check if extension is loaded
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                log('Chrome extension runtime detected', 'success');
+            } else {
+                log('Chrome extension runtime NOT detected', 'error');
+                return;
+            }
+            
+            // Test 2: Test service worker communication
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({ action: 'getKaspaRate' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (response.success) {
+                    log(`Service worker responsive - Kaspa rate: $${response.rate}`, 'success');
+                } else {
+                    log(`Service worker error: ${response.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Service worker communication failed: ${error.message}`, 'error');
+            }
+            
+            log('Basic tests completed', 'info');
+        }
+        
+        async function testKaspaMode() {
+            log('Testing Kaspa mode...', 'info');
+            
+            try {
+                // Set Kaspa mode
+                await chrome.storage.local.set({ selectedCoin: 'kaspa' });
+                log('Set coin selection to Kaspa', 'success');
+                
+                // Test rate fetching
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({ action: 'getKaspaRate' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (response.success && response.rate > 0) {
+                    log(`Kaspa rate fetched successfully: $${response.rate}`, 'success');
+                } else {
+                    log(`Kaspa rate fetch failed: ${response.error}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`Kaspa mode test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBitcoinMode() {
+            log('Testing Bitcoin mode...', 'info');
+            
+            try {
+                // Set Bitcoin mode
+                await chrome.storage.local.set({ selectedCoin: 'bitcoin' });
+                log('Set coin selection to Bitcoin', 'success');
+                
+                // Test rate fetching
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({ action: 'getBitcoinRate' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (response.success && response.rate > 0) {
+                    log(`Bitcoin rate fetched successfully: $${response.rate.toFixed(2)}`, 'success');
+                } else {
+                    log(`Bitcoin rate fetch failed: ${response.error}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`Bitcoin mode test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testThemeSwitching() {
+            log('Testing theme switching...', 'info');
+            
+            // Test Kaspa theme
+            await chrome.storage.local.set({ selectedCoin: 'kaspa' });
+            log('Applied Kaspa theme (should be green)', 'info');
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test Bitcoin theme
+            await chrome.storage.local.set({ selectedCoin: 'bitcoin' });
+            log('Applied Bitcoin theme (should be orange)', 'info');
+            
+            log('Theme switching test completed - check popup for color changes', 'success');
+        }
+        
+        async function testRefreshButton() {
+            log('Testing refresh button functionality...', 'info');
+            
+            try {
+                // Test cache clear
+                const clearResponse = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({ action: 'clearCache' }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (clearResponse.success) {
+                    log('Cache cleared successfully', 'success');
+                } else {
+                    log('Cache clear failed', 'error');
+                }
+                
+                // Test refresh with current coin
+                const result = await chrome.storage.local.get('selectedCoin');
+                const selectedCoin = result.selectedCoin || 'kaspa';
+                const action = selectedCoin === 'kaspa' ? 'getKaspaRate' : 'getBitcoinRate';
+                
+                const refreshResponse = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage({ action }, (response) => {
+                        if (chrome.runtime.lastError) {
+                            reject(new Error(chrome.runtime.lastError.message));
+                        } else {
+                            resolve(response);
+                        }
+                    });
+                });
+                
+                if (refreshResponse.success) {
+                    log(`Refresh successful for ${selectedCoin}: $${refreshResponse.rate}`, 'success');
+                } else {
+                    log(`Refresh failed: ${refreshResponse.error}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`Refresh test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function addDynamicPrice() {
+            const container = document.getElementById('dynamic-prices');
+            const prices = ['$29.99', '$149.95', '$599.00', '$1,299.99', '$45.50'];
+            const randomPrice = prices[Math.floor(Math.random() * prices.length)];
+            
+            const div = document.createElement('div');
+            div.style.padding = '10px';
+            div.style.margin = '5px 0';
+            div.style.background = '#fff3cd';
+            div.style.border = '1px solid #ffeaa7';
+            div.style.borderRadius = '4px';
+            div.innerHTML = `<strong>Dynamic Product: ${randomPrice}</strong>`;
+            
+            container.appendChild(div);
+            log(`Added dynamic price: ${randomPrice}`, 'info');
+        }
+        
+        function addBulkPrices() {
+            const container = document.getElementById('dynamic-prices');
+            const prices = ['$99.99', '$199.50', '$399.99', '$799.00', '$1,599.99'];
+            
+            prices.forEach((price, index) => {
+                setTimeout(() => {
+                    const div = document.createElement('div');
+                    div.style.padding = '8px';
+                    div.style.margin = '3px 0';
+                    div.style.background = '#d1ecf1';
+                    div.style.border = '1px solid #bee5eb';
+                    div.style.borderRadius = '4px';
+                    div.innerHTML = `<strong>Bulk Item ${index + 1}: ${price}</strong>`;
+                    container.appendChild(div);
+                }, index * 500);
+            });
+            
+            log('Adding bulk prices with staggered timing...', 'info');
+        }
+        
+        function clearDynamic() {
+            document.getElementById('dynamic-prices').innerHTML = '';
+            log('Cleared dynamic content', 'info');
+        }
+        
+        // Initialize
+        log('Extension Test Runner loaded', 'success');
+        log('Click buttons above to run tests', 'info');
+    </script>
+</body>
+</html>

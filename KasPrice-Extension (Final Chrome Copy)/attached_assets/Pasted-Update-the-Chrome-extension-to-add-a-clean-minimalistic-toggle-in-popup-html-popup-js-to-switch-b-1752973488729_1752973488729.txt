@@ -1,0 +1,89 @@
+Update the Chrome extension to add a clean, minimalistic toggle in popup.html + popup.js to switch between Kaspa and Bitcoin price display.
+
+1️⃣ **popup.html**
+- In the settings area, add this markup:
+  <div class="settings-container">
+    <h3>Price Mode</h3>
+    <label class="toggle-option">
+      <input type="radio" name="coinToggle" value="kaspa">
+      <span>Kaspa</span>
+    </label>
+    <label class="toggle-option">
+      <input type="radio" name="coinToggle" value="bitcoin">
+      <span>Bitcoin</span>
+    </label>
+  </div>
+
+- Add minimal CSS styling:
+  .settings-container {
+    font-family: "Inter", sans-serif;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+  }
+  .settings-container h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333;
+  }
+  .toggle-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .toggle-option input[type="radio"] {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    margin-right: 8px;
+    transition: 0.2s ease;
+  }
+  .toggle-option input[type="radio"]:checked {
+    border: 6px solid #4CAF50;
+  }
+  .toggle-option span {
+    font-size: 13px;
+    color: #444;
+  }
+
+2️⃣ **popup.js**
+- On load:
+  - Read chrome.storage.local.get("selectedCoin")
+  - If nothing saved, default to "kaspa"
+  - Pre-select the correct radio button
+- On change of the radio button:
+  - Save the selection with chrome.storage.local.set({selectedCoin:value})
+  - Send a message to content.js:
+    chrome.runtime.sendMessage({action:"refreshConversion"})
+
+3️⃣ **content.js**
+- Before running conversion, read chrome.storage.local.get("selectedCoin") to know which coin is selected.
+- If Kaspa:
+  - Fetch https://api.coingecko.com/api/v3/simple/price?ids=kaspa&vs_currencies=usd
+  - Show prices as $USD (XXX KAS) in green #00897B
+- If Bitcoin:
+  - Fetch https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd
+  - Convert USD -> BTC
+    - If BTC < 0.01 (roughly under $1,000) show in sats:
+      $50 (123,456 sats)
+    - Otherwise show in BTC:
+      $250,000 (2.42 BTC)
+  - Style BTC text in orange #F7931A
+- Cache the coin rate for 5 minutes just like existing logic
+- MutationObserver should continue working the same
+- Add a chrome.runtime.onMessage listener for action:"refreshConversion" to:
+  - Clear existing [data-kasprice-processed] attributes
+  - Re-run conversion immediately with the new coin mode
+
+4️⃣ **Do not break existing functionality**
+- Keep all previous scanning and update logic the same
+- Only add the toggle UI, storage, and dynamic refresh behavior
+
+**Expected Result:**
+- Popup shows a minimal clean toggle between Kaspa and Bitcoin
+- Switching modes instantly refreshes prices on the current page
+- Kaspa stays green, Bitcoin shows sats for small amounts and BTC for large amounts in orange

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Extension Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .browser-chrome {
+            background: #e8eaed;
+            border-bottom: 1px solid #dadce0;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .url-bar {
+            flex: 1;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .extension-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #49EACB 0%, #3BC5A8 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .popup {
+            position: absolute;
+            top: 32px;
+            right: 0;
+            width: 320px;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .popup.show {
+            display: block;
+        }
+        
+        .browser-content {
+            flex: 1;
+            background: white;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .page-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .price-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin: 8px 0;
+            position: relative;
+        }
+        
+        .conversion {
+            color: #28a745;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+        
+        .test-controls {
+            background: #e7f3ff;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-controls button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 4px;
+            font-size: 14px;
+        }
+        
+        .test-controls button:hover {
+            background: #0056b3;
+        }
+        
+        .status-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="browser-chrome">
+        <div class="url-bar" id="urlBar">http://localhost:5000/extension-simulator.html</div>
+        <div class="extension-icon" onclick="togglePopup()">K
+            <div class="popup" id="extensionPopup"></div>
+        </div>
+    </div>
+    
+    <div class="browser-content">
+        <div class="main-content">
+            <div class="page-content">
+                <h1>Extension Test Environment</h1>
+                
+                <div class="test-controls">
+                    <h3>Extension Controls</h3>
+                    <button onclick="loadTestPage()">Load Test Page</button>
+                    <button onclick="loadAmazonSim()">Simulate Amazon</button>
+                    <button onclick="loadEbaySim()">Simulate eBay</button>
+                    <button onclick="testRapidRefresh()">Test Rapid Refresh</button>
+                    <button onclick="clearLog()">Clear Log</button>
+                </div>
+                
+                <div class="status-log" id="statusLog">Extension simulator loaded. Click the 'K' icon to test popup functionality.</div>
+                
+                <div id="pageContent">
+                    <div class="price-section">
+                        <h2>Sample E-commerce Page</h2>
+                        <p>MacBook Pro: <span class="price" data-usd="2399.00">$2,399.00</span></p>
+                        <p>iPhone 15: <span class="price" data-usd="799.99">$799.99</span></p>
+                        <p>AirPods Pro: <span class="price" data-usd="249.95">$249.95</span></p>
+                        <p>iPad Air: <span class="price" data-usd="599.00">$599.00</span></p>
+                    </div>
+                    
+                    <div class="price-section">
+                        <h2>Various Price Ranges</h2>
+                        <p>Coffee: <span class="price" data-usd="12.99">$12.99</span></p>
+                        <p>Book: <span class="price" data-usd="24.99">$24.99</span></p>
+                        <p>Gaming Console: <span class="price" data-usd="499.99">$499.99</span></p>
+                        <p>Luxury Watch: <span class="price" data-usd="15750.00">$15,750.00</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentCoin = 'kaspa';
+        let kaspaRate = 0.094555;
+        let bitcoinRate = 118015;
+        let refreshInProgress = false;
+        let lastRefreshTime = 0;
+        
+        function log(message) {
+            const statusLog = document.getElementById('statusLog');
+            const timestamp = new Date().toLocaleTimeString();
+            statusLog.textContent += `[${timestamp}] ${message}\n`;
+            statusLog.scrollTop = statusLog.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('statusLog').textContent = '';
+        }
+        
+        function togglePopup() {
+            const popup = document.getElementById('extensionPopup');
+            const isVisible = popup.classList.contains('show');
+            
+            if (!isVisible) {
+                renderPopup();
+                popup.classList.add('show');
+                log('Extension popup opened');
+            } else {
+                popup.classList.remove('show');
+                log('Extension popup closed');
+            }
+        }
+        
+        function renderPopup() {
+            const popup = document.getElementById('extensionPopup');
+            const rate = currentCoin === 'kaspa' ? kaspaRate : bitcoinRate;
+            const coinName = currentCoin === 'kaspa' ? 'Kaspa' : 'Bitcoin';
+            const formatted = currentCoin === 'kaspa' ? rate.toFixed(4) : rate.toFixed(2);
+            const primaryColor = currentCoin === 'kaspa' ? '#49EACB' : '#F7931A';
+            const bgColor = currentCoin === 'kaspa' ? 'rgba(73, 234, 203, 0.1)' : 'rgba(247, 147, 26, 0.1)';
+            
+            popup.innerHTML = `
+                <div style="padding: 0; overflow: hidden; border-radius: 12px; width: 340px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, ${primaryColor} 0%, ${currentCoin === 'kaspa' ? '#3BC5A8' : '#E8830F'} 100%); color: white; padding: 20px; display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 20px; height: 20px; background: rgba(255,255,255,0.2); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px;">
+                            K
+                        </div>
+                        <h1 style="margin: 0; font-size: 17px; font-weight: 600;">USD to ${coinName}</h1>
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div style="padding: 24px 20px 20px;">
+                        <!-- Modern Crypto Switch -->
+                        <div style="margin-bottom: 24px; display: flex; justify-content: center;">
+                            <div style="position: relative; width: 260px; height: 36px; background: #f1f3f4; border-radius: 18px; border: 1px solid #e8eaed; display: flex; align-items: center; padding: 2px; cursor: pointer;" onclick="switchCoin('${currentCoin === 'kaspa' ? 'bitcoin' : 'kaspa'}')">
+                                <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 30px; border-radius: 15px; font-weight: 500; font-size: 13px; color: ${currentCoin === 'kaspa' ? 'white' : '#8a8a8a'}; background: ${currentCoin === 'kaspa' ? primaryColor : 'transparent'}; ${currentCoin === 'kaspa' ? 'box-shadow: 0 2px 8px rgba(73, 234, 203, 0.3);' : ''} transition: all 0.3s ease;">
+                                    <span style="font-size: 14px; font-weight: bold;">K</span>
+                                    <span>Kaspa</span>
+                                </div>
+                                <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; height: 30px; border-radius: 15px; font-weight: 500; font-size: 13px; color: ${currentCoin === 'bitcoin' ? 'white' : '#8a8a8a'}; background: ${currentCoin === 'bitcoin' ? primaryColor : 'transparent'}; ${currentCoin === 'bitcoin' ? 'box-shadow: 0 2px 8px rgba(247, 147, 26, 0.3);' : ''} transition: all 0.3s ease;">
+                                    <span style="font-size: 14px; font-weight: bold;">₿</span>
+                                    <span>Bitcoin</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rate Display -->
+                        <div style="background: ${bgColor}; border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; border: 1px solid ${currentCoin === 'kaspa' ? 'rgba(73, 234, 203, 0.2)' : 'rgba(247, 147, 26, 0.2)'};">
+                            <div style="font-size: 28px; font-weight: 700; color: ${primaryColor}; margin-bottom: 6px;">
+                                $${formatted}
+                            </div>
+                            <div style="font-size: 12px; color: #6c757d; font-weight: 400; opacity: 0.8;">
+                                ${new Date().toLocaleTimeString()}
+                            </div>
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                            <button onclick="refreshRate()" style="display: flex; align-items: center; gap: 8px; background: ${primaryColor}; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 500; cursor: pointer; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); transition: all 0.2s ease;">
+                                <span style="font-size: 14px;">↻</span>
+                                Refresh
+                            </button>
+                            
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #6c757d;">
+                                <div style="width: 8px; height: 8px; border-radius: 50%; background: #28a745;"></div>
+                                <span>Connected</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function switchCoin(coin) {
+            currentCoin = coin;
+            log(`Switched to ${coin === 'kaspa' ? 'Kaspa' : 'Bitcoin'} mode - Auto-refreshing rate...`);
+            
+            // Apply theme
+            const icon = document.querySelector('.extension-icon');
+            if (coin === 'kaspa') {
+                icon.style.background = 'linear-gradient(135deg, #49EACB 0%, #3BC5A8 100%)';
+            } else {
+                icon.style.background = 'linear-gradient(135deg, #F7931A 0%, #E8830F 100%)';
+            }
+            
+            // Auto-refresh rate when switching currencies
+            refreshRate();
+            renderPopup();
+        }
+        
+        function refreshRate() {
+            const now = Date.now();
+            if (now - lastRefreshTime < 1000) {
+                log('Refresh rate limited - too frequent clicks (debounced)');
+                return;
+            }
+            
+            if (refreshInProgress) {
+                log('Refresh already in progress - ignoring click');
+                return;
+            }
+            
+            refreshInProgress = true;
+            lastRefreshTime = now;
+            
+            log(`Refreshing ${currentCoin} rate...`);
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                // Simulate slight rate variation
+                if (currentCoin === 'kaspa') {
+                    kaspaRate = 0.094555 + (Math.random() - 0.5) * 0.001;
+                } else {
+                    bitcoinRate = 118015 + (Math.random() - 0.5) * 1000;
+                }
+                
+                refreshInProgress = false;
+                log(`${currentCoin} rate refreshed successfully`);
+                renderPopup();
+                updateConversions();
+            }, 500);
+        }
+        
+        function updateConversions() {
+            const prices = document.querySelectorAll('.price');
+            prices.forEach(priceEl => {
+                const usdAmount = parseFloat(priceEl.dataset.usd);
+                let conversion = '';
+                
+                if (currentCoin === 'kaspa') {
+                    const kasAmount = usdAmount / kaspaRate;
+                    if (kasAmount >= 1000) {
+                        conversion = `(${Math.round(kasAmount).toLocaleString()} KAS)`;
+                    } else {
+                        conversion = `(${kasAmount.toFixed(2)} KAS)`;
+                    }
+                } else {
+                    const btcAmount = usdAmount / bitcoinRate;
+                    if (btcAmount < 0.001) {
+                        const sats = Math.round(btcAmount * 100000000);
+                        conversion = `(${sats.toLocaleString()} sats)`;
+                    } else {
+                        conversion = `(${btcAmount.toFixed(6)} BTC)`;
+                    }
+                }
+                
+                // Remove existing conversion
+                const existingConversion = priceEl.querySelector('.conversion');
+                if (existingConversion) {
+                    existingConversion.remove();
+                }
+                
+                // Add new conversion
+                const conversionEl = document.createElement('span');
+                conversionEl.className = 'conversion';
+                conversionEl.textContent = ' ' + conversion;
+                priceEl.appendChild(conversionEl);
+            });
+        }
+        
+        function loadTestPage() {
+            document.getElementById('urlBar').textContent = 'http://localhost:5000/test.html';
+            log('Loaded test page with sample prices');
+            updateConversions();
+        }
+        
+        function loadAmazonSim() {
+            const pageContent = document.getElementById('pageContent');
+            pageContent.innerHTML = `
+                <div class="price-section">
+                    <h2>Amazon.com - Electronics</h2>
+                    <p>MacBook Air M2: <span class="price" data-usd="1199.00">$1,199.00</span></p>
+                    <p>Sony WH-1000XM5: <span class="price" data-usd="399.99">$399.99</span></p>
+                    <p>iPad Pro 12.9": <span class="price" data-usd="1099.00">$1,099.00</span></p>
+                    <p>Apple Watch Series 9: <span class="price" data-usd="429.00">$429.00</span></p>
+                </div>
+            `;
+            document.getElementById('urlBar').textContent = 'https://amazon.com/electronics';
+            log('Simulated Amazon electronics page');
+            updateConversions();
+        }
+        
+        function loadEbaySim() {
+            const pageContent = document.getElementById('pageContent');
+            pageContent.innerHTML = `
+                <div class="price-section">
+                    <h2>eBay - Buy It Now</h2>
+                    <p>Vintage Guitar: <span class="price" data-usd="2500.00">$2,500.00</span></p>
+                    <p>Collectible Watch: <span class="price" data-usd="899.95">$899.95</span></p>
+                    <p>Gaming PC: <span class="price" data-usd="1599.99">$1,599.99</span></p>
+                    <p>Camera Lens: <span class="price" data-usd="649.00">$649.00</span></p>
+                </div>
+            `;
+            document.getElementById('urlBar').textContent = 'https://ebay.com/deals';
+            log('Simulated eBay marketplace page');
+            updateConversions();
+        }
+        
+        function testRapidRefresh() {
+            log('Testing rapid refresh clicks...');
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => refreshRate(), i * 100);
+            }
+        }
+        
+        // Initialize
+        log('Extension simulator initialized');
+        updateConversions();
+        
+        // Close popup when clicking outside
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('extensionPopup');
+            const icon = document.querySelector('.extension-icon');
+            if (!icon.contains(e.target)) {
+                popup.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

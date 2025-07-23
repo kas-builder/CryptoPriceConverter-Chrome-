@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USD to KAS Extension Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .product {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            background: #f9f9f9;
+        }
+        .price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007aff;
+        }
+        .description {
+            color: #666;
+            margin-top: 5px;
+        }
+        .header {
+            background: linear-gradient(135deg, #007aff 0%, #0051d0 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 30px 0;
+        }
+        .test-section h2 {
+            color: #007aff;
+            border-bottom: 2px solid #007aff;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>USD to KAS Extension Test Page</h1>
+        <p>This page contains various USD price formats to test the Chrome extension</p>
+    </div>
+
+    <div class="test-section">
+        <h2>E-commerce Products</h2>
+        
+        <div class="product">
+            <h3>MacBook Pro</h3>
+            <div class="price">$2,399.00</div>
+            <div class="description">Latest MacBook Pro with M3 chip</div>
+        </div>
+
+        <div class="product">
+            <h3>iPhone 15</h3>
+            <div class="price">$799.99</div>
+            <div class="description">128GB storage, multiple colors available</div>
+        </div>
+
+        <div class="product">
+            <h3>Coffee Maker</h3>
+            <div class="price">$49.95</div>
+            <div class="description">12-cup programmable coffee maker</div>
+        </div>
+
+        <div class="product">
+            <h3>Luxury Watch</h3>
+            <div class="price">$15,750.00</div>
+            <div class="description">Swiss automatic movement, gold case</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Different Price Formats</h2>
+        
+        <p>Standard format: <strong>$29.99</strong></p>
+        <p>With spaces: <strong>$ 149.95</strong></p>
+        <p>Large amount: <strong>$1,234,567.89</strong></p>
+        <p>Round number: <strong>$500</strong></p>
+        <p>Small amount: <strong>$0.99</strong></p>
+        <p>Very large: <strong>$999,999.99</strong></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Real Estate Listings</h2>
+        
+        <p>🏠 Beautiful family home for <strong>$450,000</strong></p>
+        <p>🏢 Downtown condo starting at <strong>$275,950</strong></p>
+        <p>🏘️ Luxury estate priced at <strong>$2,850,000</strong></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Services & Subscriptions</h2>
+        
+        <p>💻 Web hosting plan: <strong>$12.99</strong> per month</p>
+        <p>🎵 Music streaming: <strong>$9.99</strong> monthly</p>
+        <p>📺 Premium TV package: <strong>$79.99</strong> per month</p>
+        <p>☁️ Cloud storage: <strong>$199.99</strong> annually</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Mixed Content</h2>
+        
+        <p>The total cost including tax would be approximately <strong>$1,089.45</strong>, which is a great deal considering the regular price of <strong>$1,299.00</strong>. You save <strong>$209.55</strong>!</p>
+        
+        <p>Investment opportunities starting from as little as <strong>$100.00</strong> up to <strong>$50,000.00</strong> are available.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Per-Unit Pricing (Should NOT Convert)</h2>
+        
+        <p>🥛 Milk gallon for $4.99 (<strong>$0.12</strong> per fl oz) - per unit should be ignored</p>
+        <p>🍎 Organic apples <strong>$2.99</strong> per lb - main price should convert</p>
+        <p>📦 Bulk items: <strong>$29.99</strong> (Unit price: <strong>$0.25</strong> per item)</p>
+        <p>🧴 Shampoo bottle $15.99 / <strong>$0.45</strong> per oz - per oz should be ignored</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Extension Features</h2>
+        
+        <p>📱 The extension automatically converts USD prices to KAS format:</p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+            <li>Shows prices as: <strong>"$19.99 (1,234 KAS)"</strong></li>
+            <li>Uses live exchange rates from CoinGecko</li>
+            <li>Caches rates for 5 minutes to minimize API calls</li>
+        </ul>
+        
+        <p>Test prices: <strong>$199.99</strong> • <strong>$1,499.00</strong> • <strong>$25.50</strong></p>
+    </div>
+
+    <div class="test-section">
+        <h2>Dynamic Content Test</h2>
+        <div id="dynamicPrices"></div>
+        <button onclick="addDynamicPrices()">Add More Prices</button>
+    </div>
+
+    <script>
+        function addDynamicPrices() {
+            const container = document.getElementById('dynamicPrices');
+            const prices = ['$89.99', '$1,599.00', '$25.50', '$999.95'];
+            const randomPrice = prices[Math.floor(Math.random() * prices.length)];
+            
+            const div = document.createElement('div');
+            div.style.padding = '10px';
+            div.style.border = '1px solid #ccc';
+            div.style.margin = '5px 0';
+            div.innerHTML = `New product added with price: <strong>${randomPrice}</strong>`;
+            
+            container.appendChild(div);
+        }
+    </script>
+</body>
+</html>
