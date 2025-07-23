@@ -2,6 +2,8 @@
 
 A Chrome extension that automatically converts USD prices on any webpage to Kaspa (KAS) equivalents using live exchange rates from CoinGecko.
 
+suppport my work - kaspa:qzu84tx3z5gaawr2rjxx6v6d204j6ltjqegdw7plempc99apfmhey38mlmhhc
+
 ## Features
 
 - 🔄 **Automatic Conversion**: Detects and converts USD prices ($XX.XX format) on any webpage
